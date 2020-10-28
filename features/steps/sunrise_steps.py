@@ -47,6 +47,8 @@ def step_impl(context):
     context.response = requests.get(SUNRISE_URL, params=context.data).json()
 
     # Forcing the formatted flag to 0 for an unformatted response
+    # I found the unformatted times easier to work with
+    # so I added this second request
     context.data["formatted"] = 0
     context.unformatted_response = requests.get(SUNRISE_URL, params=context.data).json()
 
@@ -64,14 +66,15 @@ def step_impl(context):
 def step_impl(context):
     response = context.response
 
-    # Getting a response that is formatted in order to compare
-    context.data["formatted"] = 1
-    formatted_response = requests.get(SUNRISE_URL, params=context.data).json()
-
-    for k in response["results"]:
-        if k != "day_length":
-            # simply asserting that the strings are not identical
-            assert(response["results"].get(k) != formatted_response["results"].get(k))
+    for item in response["results"]:
+        if item != "day_length":
+            # Attempt to convert the timestamps in the response to datetime objects
+            try:
+                datetime.fromisoformat(response["results"][item])
+            except ValueError:
+                assert()
+        else:
+            assert(isinstance(response["results"]["day_length"], int))
 
 
 @then('the status is shown as INVALID_DATE')
@@ -86,14 +89,12 @@ def step_impl(context):
     unformatted_response = context.unformatted_response
 
     # Getting the date from the request - either a specified day or today (the API's default)
-    comp_date = None
     if "date" not in context.data:
         comp_date = datetime.today().date()
     else:
         comp_date = context.data.get("date")
 
-    sunrise_date = unformatted_response["results"]["sunrise"]
-    resp_date = date.fromisoformat(sunrise_date[0:sunrise_date.index("T")])
+    resp_date = datetime.fromisoformat(unformatted_response["results"]["sunrise"]).date()
 
     assert(comp_date == resp_date)
 

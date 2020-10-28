@@ -1,4 +1,18 @@
-Project dependencies:
+Description:
+Gherkin/Python test cases for the Sunrise-Sunset API as described at https://sunrise-sunset.org/api
 
+
+Project dependencies:
 behave
 requests
+
+
+Installation instructions:
+1) Clone repository
+2) Use behave to run the sunrise_api.feature file
+
+
+Additional tests that could be added:
+Checking the response for latitude (+/-90) or longitude (+/-180) values that are out of range
+Checking the response for latitude or longitude in an invalid format
+
